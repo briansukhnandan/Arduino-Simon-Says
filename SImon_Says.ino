@@ -32,6 +32,7 @@ int startButton = 3;
 int winnerLight = 6;
 int loserLight = 4;
 
+//Joystick pins.
 const int SW_pin = 2; // digital pin connected to switch output
 const int X_pin = A0; // analog pin connected to X output
 const int Y_pin = A1; // analog pin connected to Y output
@@ -40,6 +41,7 @@ const int Y_pin = A1; // analog pin connected to Y output
 int melody[] = {NOTE_C5, NOTE_D5, NOTE_E5, NOTE_F5, NOTE_G5, NOTE_A5, NOTE_B5, NOTE_C6};
 int duration = 500; //500 ms per note.
 
+//A byte to store the user score for our LED segment display.
 byte userScore = 0;
 byte* x = &userScore; //To keep a reference to userScore in simonSays function.
 
@@ -64,6 +66,7 @@ void setup() {
   digitalWrite(loserLight,LOW);
   Serial.begin(9600);
 
+  //Initialize our display to 0.
   sevenSegWrite(*x);
 }
 
@@ -80,6 +83,8 @@ void sevenSegWrite(byte digit) {
 }
 
 void playDefeat() {
+
+  //Alternate our defeat pin.
 
   digitalWrite(loserLight, HIGH);
   delay(150);
@@ -113,9 +118,12 @@ void playVictory() {
 
 void playGreen() {
 
+  //Play the green LED and Pin 7 (for our buzzer) for half the duration.
   digitalWrite(GREEN, HIGH);
   tone(7, melody[0], duration/2);
   delay(250);
+
+  //Then turn off the Green LED.
   digitalWrite(GREEN, LOW);
   
 }
@@ -148,6 +156,7 @@ void playWhite() {
   
 }
 
+//Use our pointer as a parameter to increment the score.
 void simonSays(byte* x) {
                                                                                 
   //Make an empty array for the random notes to be stored.
@@ -164,6 +173,8 @@ void simonSays(byte* x) {
 
   for (int i = 0; i < elements; i++) {
 
+    //Play the appropriate notes if we encounter certain values from 0 to 3.
+    
     if (randArray[i] == 0) {
 
       playGreen();
@@ -235,6 +246,7 @@ void simonSays(byte* x) {
     
   } //end while
 
+  //Print out Simon's Array for convenience.
   Serial.println("User's Array:");
   for (int i = 0; i < 4; i++) {
     Serial.println(userArray[i]);
@@ -245,6 +257,8 @@ void simonSays(byte* x) {
   bool winState = true;
   for (int j = 0; j < 4; j++) {
 
+    //If we encounter something that is not a match, the user did not succeed.
+    //Set winState to false.
     if (randArray[j] != userArray[j]) {
       winState = false;
       break;
@@ -252,21 +266,24 @@ void simonSays(byte* x) {
 
   }
 
+  //If the user did succeed, increment the score and play our victory animation.
   if (winState) {
 
     Serial.println("Winner Winner Chicken Dinner");
     (*x)++;
 
+    //If we get a seg overload, set the score back to 0 (we are primitive).
     if ((*x) > 9) (*x) = 0;
     
     playVictory();
     
   } else {
 
-
+    //If the user does not succeed, decrement the score.
     Serial.println("Loser");
     (*x)--;
 
+    //Since the score cannot be negative, keep it as 0.
     if ((*x) < 0) (*x) = 0;
     
     playDefeat();
